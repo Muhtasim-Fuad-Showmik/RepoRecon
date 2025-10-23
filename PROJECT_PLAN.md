@@ -115,13 +115,21 @@ RepoRecon is a bug tracking and technical debt management application designed t
 - created_at (timestamp)
 - updated_at (timestamp)
 
-### Comments
+### BugComments
 
 - id (UUID)
 - content (text)
-- issue_type (enum: bug, technical_debt)
-- issue_id (foreign key)
-- author_id (foreign key)
+- bug_id (foreign key to Bugs.id)
+- author_id (foreign key to Users.id)
+- created_at (timestamp)
+- updated_at (timestamp)
+
+### TechnicalDebtComments
+
+- id (UUID)
+- content (text)
+- technical_debt_id (foreign key to TechnicalDebt.id)
+- author_id (foreign key to Users.id)
 - created_at (timestamp)
 - updated_at (timestamp)
 
@@ -164,12 +172,21 @@ RepoRecon is a bug tracking and technical debt management application designed t
 - PUT /technical-debt/:id - Update technical debt item
 - DELETE /technical-debt/:id - Delete technical debt item
 
-### Comments
+### BugComments
 
-- GET /comments - Get all comments for an issue
-- POST /comments - Create new comment
-- PUT /comments/:id - Update comment
-- DELETE /comments/:id - Delete comment
+- GET /bug-comments - Get all bug comments
+- GET /bug-comments/:id - Get bug comment by ID
+- POST /bug-comments - Create new bug comment
+- PUT /bug-comments/:id - Update bug comment
+- DELETE /bug-comments/:id - Delete bug comment
+
+### TechnicalDebtComments
+
+- GET /technical-debt-comments - Get all technical debt comments
+- GET /technical-debt-comments/:id - Get technical debt comment by ID
+- POST /technical-debt-comments - Create new technical debt comment
+- PUT /technical-debt-comments/:id - Update technical debt comment
+- DELETE /technical-debt-comments/:id - Delete technical debt comment
 
 ## Development Phases
 
