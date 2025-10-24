@@ -26,9 +26,6 @@ temp/
 *.swp
 *.swo
 
-# Windsurf Files
-.windsurf/
-
 # OS generated files
 Thumbs.db
 .DS_Store
