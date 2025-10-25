@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
 
 @Controller()
@@ -22,21 +22,5 @@ export class AppController {
       timestamp: new Date().toISOString(),
       service: 'RepoRecon API'
     };
-  }
-
-  // Bug tracking endpoints
-  @Get('bugs')
-  getAllBugs(): any[] {
-    return this.appService.getAllBugs();
-  }
-
-  @Get('bugs/:id')
-  getBugById(@Param('id') id: string): any {
-    return this.appService.getBugById(parseInt(id));
-  }
-
-  @Post('bugs')
-  createBug(@Body() bug: any): any {
-    return this.appService.createBug(bug);
   }
 }
