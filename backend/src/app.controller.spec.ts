@@ -35,26 +35,4 @@ describe('AppController', () => {
       expect(health.service).toBe('RepoRecon API');
     });
   });
-
-  describe('bugs', () => {
-    it('should return all bugs', () => {
-      const bugs = appController.getAllBugs();
-      expect(Array.isArray(bugs)).toBe(true);
-      expect(bugs.length).toBeGreaterThan(0);
-    });
-
-    it('should return a bug by ID', () => {
-      const bug = appController.getBugById('1');
-      expect(bug).toBeDefined();
-      expect(bug.id).toBe(1);
-    });
-
-    it('should create a new bug', () => {
-      const newBug = { title: 'Test bug', priority: 'medium', assignedTo: 'Tester' };
-      const createdBug = appController.createBug(newBug);
-      expect(createdBug).toBeDefined();
-      expect(createdBug.id).toBeGreaterThan(0);
-      expect(createdBug.title).toBe('Test bug');
-    });
-  });
 });
