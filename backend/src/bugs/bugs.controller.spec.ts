@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BugsController } from './bugs.controller';
 import { BugsService } from './bugs.service';
+import { LoggerService } from '../common/logger.service';
 
 describe('BugsController', () => {
   let controller: BugsController;
@@ -9,7 +10,19 @@ describe('BugsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [BugsController],
-      providers: [BugsService],
+      providers: [
+        BugsService,
+        {
+          provide: LoggerService,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
+            debug: jest.fn(),
+            verbose: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<BugsController>(BugsController);
@@ -36,7 +49,12 @@ describe('BugsController', () => {
 
   describe('createBug', () => {
     it('should create a new bug', () => {
-      const newBug = { title: 'Test bug', priority: 'medium', assignedTo: 'Tester' };
+      const newBug = { 
+        title: 'Test bug', 
+        description: 'Test description',
+        priority: 'medium', 
+        assignedTo: 'Tester' 
+      };
       const result = controller.createBug(newBug);
       expect(result).toBeDefined();
       expect(result.id).toBeGreaterThan(0);
