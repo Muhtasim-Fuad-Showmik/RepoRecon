@@ -1,12 +1,25 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BugsService } from './bugs.service';
+import { LoggerService } from '../common/logger.service';
 
 describe('BugsService', () => {
   let service: BugsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [BugsService],
+      providers: [
+        BugsService,
+        {
+          provide: LoggerService,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
+            debug: jest.fn(),
+            verbose: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     service = module.get<BugsService>(BugsService);
@@ -34,7 +47,12 @@ describe('BugsService', () => {
 
   describe('createBug', () => {
     it('should create a new bug', () => {
-      const newBug = { title: 'Test bug', priority: 'medium', assignedTo: 'Tester' };
+      const newBug = { 
+        title: 'Test bug', 
+        description: 'Test description',
+        priority: 'medium', 
+        assignedTo: 'Tester' 
+      };
       const result = service.createBug(newBug);
       expect(result).toBeDefined();
       expect(result.id).toBeGreaterThan(0);
