@@ -7,9 +7,13 @@ import { LoggerService } from './common/logger.service';
 import { LoggingMiddleware } from './common/logging.middleware';
 import { ValidationMiddleware } from './common/validation.middleware';
 import { corsMiddleware } from './common/cors.middleware';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
+import { ProjectsModule } from './projects/projects.module';
+import { TechnicalDebtModule } from './technical-debt/technical-debt.module';
 
 @Module({
-  imports: [CommonModule, BugsModule],
+  imports: [CommonModule, BugsModule, AuthModule, UsersModule, ProjectsModule, TechnicalDebtModule],
   controllers: [AppController],
   providers: [AppService, LoggerService],
 })
