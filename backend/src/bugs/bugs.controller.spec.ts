@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BugsController } from './bugs.controller';
 import { BugsService } from './bugs.service';
-import { LoggerService } from '../common/logger.service';
 
 describe('BugsController', () => {
   let controller: BugsController;
@@ -11,15 +10,15 @@ describe('BugsController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [BugsController],
       providers: [
-        BugsService,
         {
-          provide: LoggerService,
+          provide: BugsService,
           useValue: {
-            log: jest.fn(),
-            error: jest.fn(),
-            warn: jest.fn(),
-            debug: jest.fn(),
-            verbose: jest.fn(),
+            findAll: jest.fn(),
+            findOne: jest.fn(),
+            create: jest.fn(),
+            update: jest.fn(),
+            remove: jest.fn(),
+            search: jest.fn(),
           },
         },
       ],
@@ -34,30 +33,41 @@ describe('BugsController', () => {
   });
 
   describe('getAllBugs', () => {
-    it('should return an array of bugs', () => {
-      const result = controller.getAllBugs();
+    it('should return an array of bugs', async () => {
+      const mockBugs = [{ id: '1', title: 'Test Bug' }];
+      jest.spyOn(service, 'findAll').mockResolvedValue(mockBugs as any);
+      
+      const result = await controller.getAllBugs();
       expect(Array.isArray(result)).toBe(true);
+      expect(result).toEqual(mockBugs);
     });
   });
 
   describe('getBugById', () => {
-    it('should return a bug by ID', () => {
-      const result = controller.getBugById('1');
+    it('should return a bug by ID', async () => {
+      const mockBug = { id: '1', title: 'Test Bug' };
+      jest.spyOn(service, 'findOne').mockResolvedValue(mockBug as any);
+      
+      const result = await controller.getBugById('1');
       expect(result).toBeDefined();
+      expect(result).toEqual(mockBug);
     });
   });
 
   describe('createBug', () => {
-    it('should create a new bug', () => {
+    it('should create a new bug', async () => {
       const newBug = { 
         title: 'Test bug', 
         description: 'Test description',
-        priority: 'medium', 
+        priority: 'medium' as any, 
         assignedTo: 'Tester' 
       };
-      const result = controller.createBug(newBug);
+      const createdBug = { id: '1', ...newBug };
+      jest.spyOn(service, 'create').mockResolvedValue(createdBug as any);
+      
+      const result = await controller.createBug(newBug);
       expect(result).toBeDefined();
-      expect(result.id).toBeGreaterThan(0);
+      expect(result.id).toBeDefined();
     });
   });
 });
