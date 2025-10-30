@@ -2,47 +2,51 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, HttpStatus, Htt
 import { BugsService } from './bugs.service';
 import { CreateBugDto } from './dto/create-bug.dto';
 import { UpdateBugDto } from './dto/update-bug.dto';
+import { Bug } from './entities/bug.entity';
 
 @Controller('bugs')
 export class BugsController {
   constructor(private readonly bugsService: BugsService) {}
 
   @Get()
-  getAllBugs(
+  async getAllBugs(
     @Query('priority') priority?: string,
     @Query('status') status?: string,
-    @Query('assignedTo') assignedTo?: string
-  ): any[] {
-    return this.bugsService.getAllBugs(priority, status, assignedTo);
+  ): Promise<Bug[]> {
+    return this.bugsService.findAll(priority, status);
   }
 
   @Get(':id')
-  getBugById(@Param('id') id: string): any {
-    return this.bugsService.getBugById(parseInt(id));
+  async getBugById(@Param('id') id: string): Promise<Bug> {
+    const bug = await this.bugsService.findOne(id);
+    if (!bug) {
+      throw new Error('Bug not found');
+    }
+    return bug;
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  createBug(@Body() createBugDto: CreateBugDto): any {
-    return this.bugsService.createBug(createBugDto);
+  async createBug(@Body() createBugDto: CreateBugDto): Promise<Bug> {
+    return this.bugsService.create(createBugDto);
   }
 
   @Put(':id')
-  updateBug(
+  async updateBug(
     @Param('id') id: string,
     @Body() updateBugDto: UpdateBugDto
-  ): any {
-    return this.bugsService.updateBug(parseInt(id), updateBugDto);
+  ): Promise<Bug> {
+    return this.bugsService.update(id, updateBugDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  removeBug(@Param('id') id: string): void {
-    this.bugsService.deleteBug(parseInt(id));
+  async removeBug(@Param('id') id: string): Promise<void> {
+    return this.bugsService.remove(id);
   }
 
   @Get('search')
-  searchBugs(@Query('q') query: string): any[] {
-    return this.bugsService.searchBugs(query);
+  async searchBugs(@Query('q') query: string): Promise<Bug[]> {
+    return this.bugsService.search(query);
   }
 }

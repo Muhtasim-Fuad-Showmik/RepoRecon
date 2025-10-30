@@ -1,57 +1,45 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { LoggerService } from '../common/logger.service';
+import { Bug } from './entities/bug.entity';
 
 @Injectable()
 export class BugsService {
-  constructor(private readonly logger: LoggerService) {}
+  constructor(
+    private readonly logger: LoggerService,
+    @InjectRepository(Bug)
+    private bugsRepository: Repository<Bug>,
+  ) {}
 
-  private bugs = [
-    { 
-      id: 1, 
-      title: 'Login page not responsive', 
-      description: 'The login page is not responding to clicks',
-      status: 'open', 
-      priority: 'high', 
-      assignedTo: 'John Doe',
-      createdAt: new Date().toISOString()
-    },
-    { 
-      id: 2, 
-      title: 'Database connection timeout', 
-      description: 'Database connection is timing out after 30 seconds',
-      status: 'in-progress', 
-      priority: 'critical', 
-      assignedTo: 'Jane Smith',
-      createdAt: new Date().toISOString()
-    },
-    { 
-      id: 3, 
-      title: 'UI alignment issues', 
-      description: 'Buttons are not aligned properly on the dashboard',
-      status: 'resolved', 
-      priority: 'low', 
-      assignedTo: 'Mike Johnson',
-      createdAt: new Date().toISOString()
-    }
-  ];
-
-  // Get all bugs with optional filtering
-  getAllBugs(priority?: string, status?: string, assignedTo?: string): any[] {
-    this.logger.log(`Fetching all bugs with filters: priority=${priority}, status=${status}, assignedTo=${assignedTo}`);
-    const filteredBugs = this.bugs.filter(bug => {
-      if (priority && bug.priority !== priority) return false;
-      if (status && bug.status !== status) return false;
-      if (assignedTo && bug.assignedTo !== assignedTo) return false;
-      return true;
-    });
-    this.logger.log(`Found ${filteredBugs.length} bugs`);
-    return filteredBugs;
+  async create(bugData: Partial<Bug>): Promise<Bug> {
+    this.logger.log(`Creating new bug: ${bugData.title}`);
+    const bug = this.bugsRepository.create(bugData);
+    const savedBug = await this.bugsRepository.save(bug);
+    this.logger.log(`Bug created successfully with ID: ${savedBug.id}`);
+    return savedBug;
   }
 
-  // Get a bug by ID
-  getBugById(id: number): any {
+  async findAll(priority?: string, status?: string, assignedTo?: string): Promise<Bug[]> {
+    this.logger.log(`Fetching all bugs with filters: priority=${priority}, status=${status}, assignedTo=${assignedTo}`);
+    const queryBuilder = this.bugsRepository.createQueryBuilder('bug');
+    
+    if (priority) {
+      queryBuilder.andWhere('bug.priority = :priority', { priority });
+    }
+    
+    if (status) {
+      queryBuilder.andWhere('bug.status = :status', { status });
+    }
+    
+    const bugs = await queryBuilder.getMany();
+    this.logger.log(`Found ${bugs.length} bugs`);
+    return bugs;
+  }
+
+  async findOne(id: string): Promise<Bug | null> {
     this.logger.log(`Fetching bug with ID: ${id}`);
-    const bug = this.bugs.find(bug => bug.id === id);
+    const bug = await this.bugsRepository.findOne({ where: { id } });
     if (bug) {
       this.logger.log(`Bug found: ${bug.title}`);
     } else {
@@ -60,70 +48,42 @@ export class BugsService {
     return bug;
   }
 
-  // Create a new bug
-  createBug(bug: any): any {
-    this.logger.log(`Creating new bug: ${bug.title}`);
-    const newBug = {
-      id: this.bugs.length + 1,
-      ...bug,
-      status: 'open',
-      createdAt: new Date().toISOString()
-    };
-    this.bugs.push(newBug);
-    this.logger.log(`Bug created successfully with ID: ${newBug.id}`);
-    return newBug;
-  }
-
-  // Update a bug
-  updateBug(id: number, updatedBug: any): any {
+  async update(id: string, bugData: Partial<Bug>): Promise<Bug> {
     this.logger.log(`Updating bug with ID: ${id}`);
-    const index = this.bugs.findIndex(bug => bug.id === id);
-    if (index === -1) {
+    await this.bugsRepository.update(id, bugData);
+    const updatedBug = await this.findOne(id);
+    if (!updatedBug) {
       this.logger.warn(`Bug with ID ${id} not found for update`);
-      return null;
+      throw new Error('Bug not found');
     }
-    
-    // Don't allow updating the status through this method
-    const { status, ...updateData } = updatedBug;
-    
-    this.bugs[index] = {
-      ...this.bugs[index],
-      ...updateData,
-      updatedAt: new Date().toISOString()
-    };
-    
-    this.logger.log(`Bug updated successfully: ${this.bugs[index].title}`);
-    return this.bugs[index];
+    this.logger.log(`Bug updated successfully: ${updatedBug.title}`);
+    return updatedBug;
   }
 
-  // Delete a bug
-  deleteBug(id: number): void {
+  async remove(id: string): Promise<void> {
     this.logger.log(`Deleting bug with ID: ${id}`);
-    const index = this.bugs.findIndex(bug => bug.id === id);
-    if (index !== -1) {
-      const deletedBug = this.bugs[index];
-      this.bugs.splice(index, 1);
-      this.logger.log(`Bug deleted successfully: ${deletedBug.title}`);
-    } else {
+    const result = await this.bugsRepository.delete(id);
+    if (result.affected === 0) {
       this.logger.warn(`Bug with ID ${id} not found for deletion`);
+      throw new Error('Bug not found');
     }
+    this.logger.log(`Bug deleted successfully`);
   }
 
-  // Search bugs
-  searchBugs(query: string): any[] {
+  async search(query: string): Promise<Bug[]> {
     this.logger.log(`Searching bugs with query: ${query}`);
     if (!query) {
       this.logger.log('No query provided, returning all bugs');
-      return this.bugs;
+      return this.findAll();
     }
     
-    const results = this.bugs.filter(bug => 
-      bug.title.toLowerCase().includes(query.toLowerCase()) ||
-      bug.description.toLowerCase().includes(query.toLowerCase()) ||
-      bug.assignedTo.toLowerCase().includes(query.toLowerCase())
-    );
+    const bugs = await this.bugsRepository
+      .createQueryBuilder('bug')
+      .where('bug.title ILIKE :query', { query: `%${query}%` })
+      .orWhere('bug.description ILIKE :query', { query: `%${query}%` })
+      .getMany();
     
-    this.logger.log(`Search returned ${results.length} results`);
-    return results;
+    this.logger.log(`Search returned ${bugs.length} results`);
+    return bugs;
   }
 }
