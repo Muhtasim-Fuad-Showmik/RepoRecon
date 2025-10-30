@@ -1,4 +1,5 @@
 import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BugsModule } from './bugs/bugs.module';
@@ -11,9 +12,18 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
 import { TechnicalDebtModule } from './technical-debt/technical-debt.module';
+import { databaseConfig } from './config/database.config';
 
 @Module({
-  imports: [CommonModule, BugsModule, AuthModule, UsersModule, ProjectsModule, TechnicalDebtModule],
+  imports: [
+    TypeOrmModule.forRoot(databaseConfig),
+    CommonModule, 
+    BugsModule, 
+    AuthModule, 
+    UsersModule, 
+    ProjectsModule, 
+    TechnicalDebtModule
+  ],
   controllers: [AppController],
   providers: [AppService, LoggerService],
 })

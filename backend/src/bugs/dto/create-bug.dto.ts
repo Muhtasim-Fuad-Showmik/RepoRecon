@@ -1,4 +1,5 @@
 import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+import { BugPriority } from '../entities/bug.entity';
 
 export class CreateBugDto {
   @IsString()
@@ -9,8 +10,8 @@ export class CreateBugDto {
   @IsNotEmpty()
   description: string;
 
-  @IsEnum(['low', 'medium', 'high', 'critical'])
-  priority: string;
+  @IsEnum(BugPriority)
+  priority: BugPriority;
 
   @IsString()
   @IsNotEmpty()
