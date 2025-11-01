@@ -28,11 +28,19 @@ export class Bug {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({
+    type: 'varchar',
+    length: 200,
+    nullable: false,
+  })
   title: string;
 
-  @Column({ type: 'text' })
-  description: string;
+  @Column({
+    type: 'varchar',
+    length: 50,
+    nullable: false,
+  })
+  stepsToReproduce: string;
 
   @ManyToOne(() => Project, project => project.bugs)
   project: Project;
