@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Project } from '../../projects/entities/project.entity';
+import { BugComment } from './bug-comment.entity';
 
 export enum BugStatus {
   NEW = 'new',
@@ -35,12 +36,8 @@ export class Bug {
   })
   title: string;
 
-  @Column({
-    type: 'varchar',
-    length: 50,
-    nullable: false,
-  })
-  stepsToReproduce: string;
+  @Column({ type: 'text' })
+  description: string;
 
   @ManyToOne(() => Project, project => project.bugs)
   project: Project;
@@ -74,6 +71,9 @@ export class Bug {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => BugComment, comment => comment.bug)
+  comments: BugComment[];
 
   @UpdateDateColumn()
   updatedAt: Date;
