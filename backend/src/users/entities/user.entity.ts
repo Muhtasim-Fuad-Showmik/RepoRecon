@@ -2,6 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { Project } from '../../projects/entities/project.entity';
 import { Bug } from '../../bugs/entities/bug.entity';
 import { TechnicalDebt } from '../../technical-debt/entities/technical-debt.entity';
+import { BugComment } from '../../bugs/entities/bug-comment.entity';
+import { TechnicalDebtComment } from '../../technical-debt/entities/technical-debt-comment.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -44,6 +46,12 @@ export class User {
 
   @OneToMany(() => TechnicalDebt, debt => debt.assignee)
   assignedTechnicalDebt: TechnicalDebt[];
+
+  @OneToMany(() => BugComment, comment => comment.author)
+  bugComments: BugComment[];
+
+  @OneToMany(() => TechnicalDebtComment, comment => comment.author)
+  technicalDebtComments: TechnicalDebtComment[];
 
   @CreateDateColumn()
   createdAt: Date;

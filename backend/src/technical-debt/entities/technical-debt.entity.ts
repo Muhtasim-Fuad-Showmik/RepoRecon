@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, OneToMany } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Project } from '../../projects/entities/project.entity';
+import { TechnicalDebtComment } from './technical-debt-comment.entity';
 
 export enum TechnicalDebtStatus {
   IDENTIFIED = 'identified',
@@ -56,6 +57,9 @@ export class TechnicalDebt {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => TechnicalDebtComment, comment => comment.technicalDebt)
+  comments: TechnicalDebtComment[];
 
   @UpdateDateColumn()
   updatedAt: Date;
