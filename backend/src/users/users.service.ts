@@ -2,12 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
+import { UsersRepository } from './repositories/users.repository';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private readonly customUsersRepository: UsersRepository,
   ) {}
 
   async create(userData: Partial<User>): Promise<User> {
@@ -38,5 +40,17 @@ export class UsersService {
 
   async remove(id: string): Promise<void> {
     await this.usersRepository.delete(id);
+  }
+
+  async findUsersByRole(role: string): Promise<User[]> {
+    return this.customUsersRepository.findUsersByRole(role as any);
+  }
+
+  async getUsersWithProjects(): Promise<User[]> {
+    return this.customUsersRepository.findUsersWithProjects();
+  }
+
+  async getUserStatistics(): Promise<any> {
+    return this.customUsersRepository.getUserStatistics();
   }
 }
