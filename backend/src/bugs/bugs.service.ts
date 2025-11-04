@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LoggerService } from '../common/logger.service';
 import { Bug } from './entities/bug.entity';
+import { BugsRepository } from './repositories/bugs.repository';
 
 @Injectable()
 export class BugsService {
@@ -10,6 +11,7 @@ export class BugsService {
     private readonly logger: LoggerService,
     @InjectRepository(Bug)
     private bugsRepository: Repository<Bug>,
+    private readonly customBugsRepository: BugsRepository,
   ) {}
 
   async create(bugData: Partial<Bug>): Promise<Bug> {
@@ -85,5 +87,19 @@ export class BugsService {
     
     this.logger.log(`Search returned ${bugs.length} results`);
     return bugs;
+  }
+
+  async findActiveBugs(): Promise<Bug[]> {
+    this.logger.log('Fetching active bugs');
+    const bugs = await this.customBugsRepository.findActiveBugs();
+    this.logger.log(`Found ${bugs.length} active bugs`);
+    return bugs;
+  }
+
+  async getBugStatistics(): Promise<any> {
+    this.logger.log('Fetching bug statistics');
+    const stats = await this.customBugsRepository.getBugStatistics();
+    this.logger.log('Bug statistics fetched successfully');
+    return stats;
   }
 }
