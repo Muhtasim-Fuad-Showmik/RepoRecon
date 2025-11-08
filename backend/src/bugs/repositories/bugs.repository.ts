@@ -1,12 +1,8 @@
-import { Repository, DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Bug } from '../entities/bug.entity';
 import { BugStatus, BugPriority } from '../entities/bug.entity';
 
 export class BugsRepository extends Repository<Bug> {
-  constructor(dataSource: DataSource) {
-    super(Bug, dataSource.createEntityManager());
-  }
-
   async findActiveBugs(): Promise<Bug[]> {
     return this.createQueryBuilder('bug')
       .where('bug.status != :status', { status: BugStatus.CLOSED })

@@ -1,12 +1,8 @@
-import { Repository, DataSource } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { UserRole } from '../entities/user.entity';
 
 export class UsersRepository extends Repository<User> {
-  constructor(dataSource: DataSource) {
-    super(User, dataSource.createEntityManager());
-  }
-
   async findUsersByRole(role: UserRole): Promise<User[]> {
     return this.createQueryBuilder('user')
       .where('user.role = :role', { role })
