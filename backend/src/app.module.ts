@@ -1,5 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BugsModule } from './bugs/bugs.module';
@@ -16,7 +18,16 @@ import { databaseConfig } from './config/database.config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot(databaseConfig),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET', 'your-super-secret-jwt-key'),
+        signOptions: { expiresIn: 3600 }, // 1 hour in seconds
+      }),
+      inject: [ConfigService],
+    }),
     CommonModule, 
     BugsModule, 
     AuthModule, 
