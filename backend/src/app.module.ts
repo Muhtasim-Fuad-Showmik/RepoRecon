@@ -1,6 +1,6 @@
 import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtModuleOptions } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -46,9 +46,9 @@ import configuration from './config/configuration';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('jwt.secret'),
-        signOptions: { expiresIn: configService.get<string>('jwt.expiresIn') },
-      }),
+        secret: configService.get<string>('jwt.secret') || 'your-super-secret-jwt-key',
+        signOptions: { expiresIn: configService.get<string>('jwt.expiresIn') || '1h' }
+      }) as any,
       inject: [ConfigService],
     }),
     CommonModule, 
