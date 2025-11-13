@@ -1,5 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BugsModule } from './bugs/bugs.module';
@@ -12,11 +14,43 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
 import { TechnicalDebtModule } from './technical-debt/technical-debt.module';
-import { databaseConfig } from './config/database.config';
+import { configValidationSchema } from './config/config.validation';
+import configuration from './config/configuration';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(databaseConfig),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+      validationSchema: configValidationSchema,
+      envFilePath: process.env.NODE_ENV === 'production' 
+        ? '.env.production' 
+        : '.env.development',
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('database.host'),
+        port: configService.get<number>('database.port'),
+        username: configService.get<string>('database.username'),
+        password: configService.get<string>('database.password'),
+        database: configService.get<string>('database.database'),
+        synchronize: configService.get<boolean>('database.synchronize'),
+        logging: configService.get<boolean>('database.logging'),
+        entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+        migrations: [__dirname + '/../migrations/**/*{.ts,.js}'],
+      }),
+      inject: [ConfigService],
+    }),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('jwt.secret'),
+        signOptions: { expiresIn: configService.get<string>('jwt.expiresIn') },
+      }),
+      inject: [ConfigService],
+    }),
     CommonModule, 
     BugsModule, 
     AuthModule, 
